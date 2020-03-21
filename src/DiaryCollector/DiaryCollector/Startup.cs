@@ -31,6 +31,8 @@ namespace DiaryCollector {
                     opts.JsonSerializerOptions.PropertyNameCaseInsensitive = true;
                     opts.JsonSerializerOptions.PropertyNamingPolicy = JsonNamingPolicy.CamelCase;
                 });
+
+            services.AddSingleton<MongoConnector>();
         }
 
         public void Configure(IApplicationBuilder app, IWebHostEnvironment env) {
