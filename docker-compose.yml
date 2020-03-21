@@ -1,0 +1,26 @@
+version: '3'
+
+networks:
+  web:
+    external: true
+  backend:
+
+services:
+  api:
+    build: ./src/DiaryCollector
+    depends_on:
+    - mongo
+    networks:
+    - web
+    - backend
+    env_file: config.env
+    expose:
+    - "8779"
+
+  mongo:
+    image: mongo:4.2.3
+    networks:
+    - backend
+    expose:
+    - "27017"
+    env_file: config.env

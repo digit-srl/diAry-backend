@@ -1,0 +1,24 @@
+# Config override for deployment
+version: '3'
+
+volumes:
+  arianna_diary_mongodb_prod:
+    external: true
+
+services:
+  api:
+    environment:
+    - ASPNETCORE_ENVIRONMENT=Development
+    labels:
+    - "traefik.enable=true"
+    - "traefik.docker.network=web"
+    - "traefik.protocol=http"
+    - "traefik.port=8779"
+    - "traefik.frontend.rule=Host:arianna.digit.srl"
+    - "traefik.frontend.entryPoints=http,https"
+
+  mongo:
+    volumes:
+    - arianna_diary_mongodb_prod:/data/db:rw
+    ports:
+    - "8123:27017"
