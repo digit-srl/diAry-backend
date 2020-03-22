@@ -30,7 +30,7 @@ mongoimport: confirmation
 
 .PHONY: up
 up:
-	${DC} up -d api
+	${DC} up -d api fathom
 	${DC} ps
 	@echo
 	@echo 'Service is now up'

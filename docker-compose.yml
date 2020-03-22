@@ -24,3 +24,15 @@ services:
     expose:
     - "27017"
     env_file: config.env
+
+  fathom:
+    image: usefathom/fathom:latest
+    networks:
+    - web
+    volumes:
+    - ./data/fathom:/data:rw
+    env_file: config.env
+    environment:
+    - "FATHOM_DATABASE_NAME=/data/fathom.db"
+    expose:
+    - "8080"

@@ -3,3 +3,5 @@
 **/.vs/*
 **/.vscode/*
 config.env
+data/*
+!data/placeholder

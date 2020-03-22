@@ -16,9 +16,20 @@ services:
     - "traefik.port=8779"
     - "traefik.frontend.rule=Host:arianna.digit.srl"
     - "traefik.frontend.entryPoints=http,https"
+    - "traefik.frontend.redirect.entryPoint=https"
 
   mongo:
     volumes:
     - arianna_diary_mongodb_prod:/data/db:rw
     ports:
     - "8125:27017"
+
+  fathom:
+    labels:
+      - "traefik.enable=true"
+      - "traefik.docker.network=web"
+      - "traefik.protocol=http"
+      - "traefik.port=8080"
+      - "traefik.frontend.rule=Host:fathom.arianna.digit.srl"
+      - "traefik.frontend.entryPoints=http,https"
+      - "traefik.frontend.redirect.entryPoint=https"
