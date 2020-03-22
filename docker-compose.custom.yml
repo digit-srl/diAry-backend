@@ -21,4 +21,4 @@ services:
     volumes:
     - arianna_diary_mongodb_prod:/data/db:rw
     ports:
-    - "8123:27017"
+    - "8125:27017"
