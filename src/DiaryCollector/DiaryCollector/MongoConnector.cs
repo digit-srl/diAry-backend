@@ -43,6 +43,11 @@ namespace DiaryCollector {
                 return Client.GetDatabase("DiaryCollection");
             }
         }
+        private IMongoCollection<ApiKey> ApiKeys {
+            get {
+                return MainDatabase.GetCollection<ApiKey>("ApiKeys");
+            }
+        }
 
         private IMongoCollection<DailyStats> DailyStats {
             get {
@@ -60,6 +65,11 @@ namespace DiaryCollector {
                 Builders<DailyStats>.Filter.Eq(s => s.Date, date.Date)
             );
             return DailyStats.Find(filter).SingleOrDefaultAsync();
+        }
+
+        public Task<ApiKey> GetApiKeyByKey(string key) {
+            var filter = Builders<ApiKey>.Filter.Eq(ak => ak.Key, key);
+            return ApiKeys.Find(filter).SingleOrDefaultAsync();
         }
 
     }

@@ -27,6 +27,7 @@ namespace DiaryCollector.Controllers {
         }
 
         [HttpPost("upload")]
+        [ServiceFilter(typeof(RequireApiKeyAttribute))]
         public async Task<IActionResult> Upload(
             [FromBody] DailyStats stats
         ) {

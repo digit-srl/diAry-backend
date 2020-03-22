@@ -33,6 +33,7 @@ namespace DiaryCollector {
                 });
 
             services.AddSingleton<MongoConnector>();
+            services.AddSingleton<RequireApiKeyAttribute>();
         }
 
         public void Configure(IApplicationBuilder app, IWebHostEnvironment env) {
