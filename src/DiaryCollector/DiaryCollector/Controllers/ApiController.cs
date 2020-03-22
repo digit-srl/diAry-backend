@@ -3,10 +3,11 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
 using MongoDB.Driver.GeoJsonObjectModel;
 using System;
+using System.Globalization;
 using System.Threading.Tasks;
 
 namespace DiaryCollector.Controllers {
-    
+
     [Route("api")]
     public class ApiController : ControllerBase {
 
@@ -29,7 +30,7 @@ namespace DiaryCollector.Controllers {
         public async Task<IActionResult> Upload(
             [FromBody] DailyStats stats
         ) {
-            Logger.LogInformation("Receiving daily stats from device {0}", stats.DeviceId);
+            Logger.LogInformation("Receiving daily stats from device {0} for {1}", stats.DeviceId, stats.Date.ToString("d", CultureInfo.InvariantCulture));
 
             // Safety checks
             if(stats.Date < MinDate) {
@@ -76,6 +77,13 @@ namespace DiaryCollector.Controllers {
                > MinutesADay) {
                 Logger.LogError("Movement tracking section exceeds minutes in a day");
                 return UnprocessableEntity();
+            }
+
+            // Check for duplicates
+            var existingStats = await Mongo.GetDailyStats(stats.DeviceId, stats.Date);
+            if(existingStats != null) {
+                Logger.LogError("Duplicate statistics from device ID {0} for date {1}", stats.DeviceId, stats.Date.ToString("d", CultureInfo.InvariantCulture));
+                return Conflict();
             }
 
             // OK-dokey
