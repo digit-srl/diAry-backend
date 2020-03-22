@@ -80,6 +80,7 @@ namespace DiaryCollector.Controllers {
 
             // OK-dokey
             await Mongo.AddDailyStats(new DataModels.DailyStats {
+                DeviceId = stats.DeviceId,
                 Date = stats.Date.Date,
                 TotalMinutesTracked = stats.TotalMinutesTracked,
                 TotalWomVouchersEarned = 0,

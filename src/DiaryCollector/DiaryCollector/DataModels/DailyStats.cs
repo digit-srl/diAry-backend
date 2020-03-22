@@ -11,6 +11,9 @@ namespace DiaryCollector.DataModels {
         [BsonId(IdGenerator = typeof(ObjectIdGenerator))]
         public ObjectId Id { get; set; }
 
+        [BsonElement("deviceId")]
+        public Guid DeviceId { get; set; }
+
         [BsonElement("date")]
         [BsonDateTimeOptions(Kind = DateTimeKind.Local)]
         public DateTime Date { get; set; }
