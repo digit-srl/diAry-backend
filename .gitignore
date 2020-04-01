@@ -5,3 +5,5 @@
 config.env
 data/*
 !data/placeholder
+keys/*
+!keys/placeholder
