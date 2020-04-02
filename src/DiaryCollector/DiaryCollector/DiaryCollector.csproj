@@ -7,6 +7,7 @@
   <ItemGroup>
     <PackageReference Include="geohash-dotnet" Version="1.0.4" />
     <PackageReference Include="MongoDB.Driver" Version="2.10.2" />
+    <PackageReference Include="WomPlatform.Connector" Version="2.1.1" />
   </ItemGroup>
 
 

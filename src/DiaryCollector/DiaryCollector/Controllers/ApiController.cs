@@ -1,10 +1,12 @@
 ﻿using DiaryCollector.InputModels;
+using DiaryCollector.OutputModels;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
 using MongoDB.Driver.GeoJsonObjectModel;
 using System;
 using System.Globalization;
 using System.Threading.Tasks;
+using WomPlatform.Connector.Models;
 
 namespace DiaryCollector.Controllers {
 
@@ -12,17 +14,20 @@ namespace DiaryCollector.Controllers {
     public class ApiController : ControllerBase {
 
         private readonly MongoConnector Mongo;
+        private readonly WomService Wom;
         private readonly ILogger<ApiController> Logger;
         private readonly Geohash.Geohasher Geohasher = new Geohash.Geohasher();
         private const int MinutesADay = 24 * 60;
 
-        private static readonly DateTime MinDate = new DateTime(2020, 3, 22);
+        private static readonly DateTime MinDate = new DateTime(2020, 4, 2);
 
         public ApiController(
             MongoConnector mongo,
+            WomService wom,
             ILogger<ApiController> logger
         ) {
             Mongo = mongo;
+            Wom = wom;
             Logger = logger;
         }
 
@@ -40,6 +45,10 @@ namespace DiaryCollector.Controllers {
             }
             if(stats.TotalMinutesTracked > MinutesADay) {
                 Logger.LogError("Total minutes tracked ({0}) exceeds minutes in a day", stats.TotalMinutesTracked);
+                return UnprocessableEntity();
+            }
+            if(stats.Date >= DateTime.UtcNow.Date) {
+                Logger.LogError("Daily statistics for non-elapsed day {0}", stats.Date.Date);
                 return UnprocessableEntity();
             }
             
@@ -87,12 +96,25 @@ namespace DiaryCollector.Controllers {
                 return Conflict();
             }
 
+            // Compute voucher amounts
+            int womCount = (int)(Math.Floor(stats.TotalMinutesTracked / 60.0) + Math.Floor(stats.LocationTracking.MinutesAtHome / 60.0));
+            Logger.LogInformation("Generating {0} WOM vouchers for {1} total minutes and {2} minutes at home", womCount, stats.TotalMinutesTracked, stats.LocationTracking.MinutesAtHome);
+            (var womOtc, var womPwd) = await Wom.Instrument.RequestVouchers(new VoucherCreatePayload.VoucherInfo[] {
+                new VoucherCreatePayload.VoucherInfo {
+                    Aim = "HE",
+                    Count = womCount,
+                    Latitude = position.Coordinates.Latitude,
+                    Longitude = position.Coordinates.Longitude,
+                    Timestamp = stats.Date.Date.AddHours(23.999)
+                }
+            });
+
             // OK-dokey
             await Mongo.AddDailyStats(new DataModels.DailyStats {
                 DeviceId = stats.DeviceId,
                 Date = stats.Date.Date,
                 TotalMinutesTracked = stats.TotalMinutesTracked,
-                TotalWomVouchersEarned = 0,
+                TotalWomVouchersEarned = womCount,
                 Centroid = position,
                 LocationCount = stats.LocationCount,
                 VehicleCount = stats.VehicleCount,
@@ -112,7 +134,10 @@ namespace DiaryCollector.Controllers {
                 }
             });
 
-            return Ok();
+            return Ok(new UploadConfirmation {
+                WomLink = $"https://{Wom.Domain}/vouchers/{womOtc:N}",
+                WomPassword = womPwd
+            });
         }
 
     }

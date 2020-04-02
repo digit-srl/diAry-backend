@@ -1,16 +1,9 @@
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text.Json;
-using System.Threading.Tasks;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
-using Microsoft.AspNetCore.HttpsPolicy;
-using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
-using Microsoft.Extensions.Logging;
+using System.Text.Json;
 
 namespace DiaryCollector {
 
@@ -34,6 +27,7 @@ namespace DiaryCollector {
 
             services.AddSingleton<MongoConnector>();
             services.AddSingleton<RequireApiKeyAttribute>();
+            services.AddSingleton<WomService>();
         }
 
         public void Configure(IApplicationBuilder app, IWebHostEnvironment env) {

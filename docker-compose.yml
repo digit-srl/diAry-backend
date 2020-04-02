@@ -16,6 +16,8 @@ services:
     env_file: config.env
     expose:
     - "8779"
+    volumes:
+    - ./keys:/keys:rw
 
   mongo:
     image: mongo:4.2.3
