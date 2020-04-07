@@ -71,6 +71,14 @@ namespace DiaryCollector.Controllers {
                 Logger.LogError("Payload does not contain location tracking section");
                 return UnprocessableEntity();
             }
+            if(stats.LocationTracking.MinutesAtHome < 0 ||
+               stats.LocationTracking.MinutesAtWork < 0 ||
+               stats.LocationTracking.MinutesAtSchool < 0 ||
+               stats.LocationTracking.MinutesAtOtherKnownLocations < 0 ||
+               stats.LocationTracking.MinutesElsewhere < 0) {
+                Logger.LogError("Location tracking minutes cannot be negative");
+                return UnprocessableEntity();
+            }
             if(stats.LocationTracking.MinutesAtHome +
                stats.LocationTracking.MinutesAtWork +
                stats.LocationTracking.MinutesAtSchool +
