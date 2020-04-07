@@ -11,11 +11,11 @@ namespace DiaryCollector.DataModels {
         [BsonId(IdGenerator = typeof(ObjectIdGenerator))]
         public ObjectId Id { get; set; }
 
-        [BsonElement("deviceId")]
-        public Guid DeviceId { get; set; }
+        [BsonElement("installationId")]
+        public Guid InstallationId { get; set; }
 
         [BsonElement("date")]
-        [BsonDateTimeOptions(Kind = DateTimeKind.Local)]
+        [BsonDateTimeOptions(Kind = DateTimeKind.Utc)]
         public DateTime Date { get; set; }
 
         [BsonElement("totalMinutesTracked")]
@@ -40,6 +40,7 @@ namespace DiaryCollector.DataModels {
         public LocationTrackingStats LocationTracking { get; set; }
 
         [BsonElement("movementTracking")]
+        [BsonIgnoreIfNull]
         public MovementTrackingStats MovementTracking { get; set; }
 
         [BsonExtraElements]

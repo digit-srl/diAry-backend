@@ -4,7 +4,7 @@ namespace DiaryCollector.InputModels {
     
     public class DailyStats {
 
-        public Guid DeviceId { get; set; }
+        public Guid InstallationId { get; set; }
 
         public DateTime Date { get; set; }
 
@@ -47,8 +47,6 @@ namespace DiaryCollector.InputModels {
             public int OnFoot { get; set; }
 
         }
-
-        public MovementTrackingStats MovementTracking { get; set; }
 
     }
 

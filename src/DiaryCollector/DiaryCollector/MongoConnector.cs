@@ -61,7 +61,7 @@ namespace DiaryCollector {
 
         public Task<DailyStats> GetDailyStats(Guid deviceId, DateTime date) {
             var filter = Builders<DailyStats>.Filter.And(
-                Builders<DailyStats>.Filter.Eq(s => s.DeviceId, deviceId),
+                Builders<DailyStats>.Filter.Eq(s => s.InstallationId, deviceId),
                 Builders<DailyStats>.Filter.Eq(s => s.Date, date.Date)
             );
             return DailyStats.Find(filter).SingleOrDefaultAsync();

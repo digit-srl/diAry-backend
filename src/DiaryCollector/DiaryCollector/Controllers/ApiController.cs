@@ -81,23 +81,10 @@ namespace DiaryCollector.Controllers {
                 return UnprocessableEntity();
             }
 
-            if(stats.MovementTracking == null) {
-                Logger.LogError("Payload does not contain movement tracking section");
-                return UnprocessableEntity();
-            }
-            if(stats.MovementTracking.Static +
-               stats.MovementTracking.Vehicle +
-               stats.MovementTracking.Bicycle +
-               stats.MovementTracking.OnFoot
-               > MinutesADay) {
-                Logger.LogError("Movement tracking section exceeds minutes in a day");
-                return UnprocessableEntity();
-            }
-
             // Check for duplicates
-            var existingStats = await Mongo.GetDailyStats(stats.DeviceId, stats.Date);
+            var existingStats = await Mongo.GetDailyStats(stats.InstallationId, stats.Date);
             if(existingStats != null) {
-                Logger.LogError("Duplicate statistics from device ID {0} for date {1}", stats.DeviceId, stats.Date.ToString("d", CultureInfo.InvariantCulture));
+                Logger.LogError("Duplicate statistics from device ID {0} for date {1}", stats.InstallationId, stats.Date.ToString("d", CultureInfo.InvariantCulture));
                 return Conflict();
             }
 
@@ -116,7 +103,7 @@ namespace DiaryCollector.Controllers {
 
             // OK-dokey
             await Mongo.AddDailyStats(new DataModels.DailyStats {
-                DeviceId = stats.DeviceId,
+                InstallationId = stats.InstallationId,
                 Date = stats.Date.Date,
                 TotalMinutesTracked = stats.TotalMinutesTracked,
                 TotalWomVouchersEarned = womCount,
@@ -130,12 +117,6 @@ namespace DiaryCollector.Controllers {
                     MinutesAtSchool = stats.LocationTracking.MinutesAtSchool,
                     MinutesAtOtherKnownLocations = stats.LocationTracking.MinutesAtOtherKnownLocations,
                     MinutesElsewhere = stats.LocationTracking.MinutesElsewhere
-                },
-                MovementTracking = new DataModels.MovementTrackingStats {
-                    Static = stats.MovementTracking.Static,
-                    Vehicle = stats.MovementTracking.Vehicle,
-                    Bicycle = stats.MovementTracking.Bicycle,
-                    OnFoot = stats.MovementTracking.OnFoot
                 }
             });
 
