@@ -10,6 +10,8 @@ namespace DiaryCollector.OutputModels {
 
         public string WomPassword { get; set; }
 
+        public int WomCount { get; set; }
+
     }
 
 }

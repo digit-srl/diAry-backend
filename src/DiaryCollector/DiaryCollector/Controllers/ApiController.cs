@@ -130,7 +130,8 @@ namespace DiaryCollector.Controllers {
 
             return Ok(new UploadConfirmation {
                 WomLink = voucherRequest.Link,
-                WomPassword = voucherRequest.Password
+                WomPassword = voucherRequest.Password,
+                WomCount = womCount
             });
         }
 
