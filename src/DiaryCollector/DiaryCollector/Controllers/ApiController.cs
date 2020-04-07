@@ -104,7 +104,7 @@ namespace DiaryCollector.Controllers {
             // Compute voucher amounts
             int womCount = (int)(Math.Floor(stats.TotalMinutesTracked / 60.0) + Math.Floor(stats.LocationTracking.MinutesAtHome / 60.0));
             Logger.LogInformation("Generating {0} WOM vouchers for {1} total minutes and {2} minutes at home", womCount, stats.TotalMinutesTracked, stats.LocationTracking.MinutesAtHome);
-            (var womOtc, var womPwd) = await Wom.Instrument.RequestVouchers(new VoucherCreatePayload.VoucherInfo[] {
+            var voucherRequest = await Wom.Instrument.RequestVouchers(new VoucherCreatePayload.VoucherInfo[] {
                 new VoucherCreatePayload.VoucherInfo {
                     Aim = "HE",
                     Count = womCount,
@@ -140,8 +140,8 @@ namespace DiaryCollector.Controllers {
             });
 
             return Ok(new UploadConfirmation {
-                WomLink = $"https://{Wom.Domain}/vouchers/{womOtc:N}",
-                WomPassword = womPwd
+                WomLink = voucherRequest.Link,
+                WomPassword = voucherRequest.Password
             });
         }
 
