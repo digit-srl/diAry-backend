@@ -36,7 +36,12 @@ namespace DiaryCollector.Controllers {
         public async Task<IActionResult> Upload(
             [FromBody] DailyStats stats
         ) {
-            Logger.LogInformation("Receiving daily stats from device {0} for {1}", stats.DeviceId, stats.Date.ToString("d", CultureInfo.InvariantCulture));
+            if(!ModelState.IsValid) {
+                Logger.LogError("Failed to parse input data: {0}", ModelState);
+                return BadRequest();
+            }
+
+            Logger.LogInformation("Receiving daily stats from device {0} for {1}", stats.InstallationId, stats.Date.ToString("d", CultureInfo.InvariantCulture));
 
             // Safety checks
             if(stats.Date < MinDate) {
