@@ -119,6 +119,9 @@ namespace DiaryCollector.Controllers {
                 LocationCount = stats.LocationCount,
                 VehicleCount = stats.VehicleCount,
                 EventCount = stats.EventCount,
+                SampleCount = stats.SampleCount,
+                DiscardedSampleCount = stats.DiscardedSampleCount,
+                BoundingBoxDiagonal = stats.BoundingBoxDiagonal,
                 LocationTracking = new DataModels.LocationTrackingStats {
                     MinutesAtHome = stats.LocationTracking.MinutesAtHome,
                     MinutesAtWork = stats.LocationTracking.MinutesAtWork,

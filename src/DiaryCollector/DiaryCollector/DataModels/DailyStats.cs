@@ -36,6 +36,18 @@ namespace DiaryCollector.DataModels {
         [BsonElement("eventCount")]
         public int EventCount { get; set; }
 
+        [BsonElement("sampleCount")]
+        [BsonIgnoreIfDefault]
+        public int SampleCount { get; set; }
+
+        [BsonElement("discardedSampleCount")]
+        [BsonIgnoreIfDefault]
+        public int DiscardedSampleCount { get; set; }
+
+        [BsonElement("boundingBoxDiagonal")]
+        [BsonIgnoreIfDefault]
+        public double BoundingBoxDiagonal { get; set; }
+
         [BsonElement("locationTracking")]
         public LocationTrackingStats LocationTracking { get; set; }
 

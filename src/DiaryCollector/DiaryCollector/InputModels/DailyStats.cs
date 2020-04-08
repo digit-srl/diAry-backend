@@ -20,6 +20,12 @@ namespace DiaryCollector.InputModels {
 
         public int EventCount { get; set; }
 
+        public int SampleCount { get; set; }
+
+        public int DiscardedSampleCount { get; set; }
+
+        public double BoundingBoxDiagonal { get; set; }
+
         public class LocationTrackingStats {
 
             public int MinutesAtHome { get; set; }
