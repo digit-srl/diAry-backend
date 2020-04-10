@@ -72,8 +72,10 @@ namespace DiaryCollector.Controllers {
             
             GeoJsonPoint<GeoJson2DGeographicCoordinates> position;
             try {
-                var decoded = Geohasher.Decode(stats.CentroidHash);
+                var geohash = stats.CentroidHash.Substring(0, 5);
+                var decoded = Geohasher.Decode(geohash);
                 position = new GeoJsonPoint<GeoJson2DGeographicCoordinates>(new GeoJson2DGeographicCoordinates(decoded.Item2, decoded.Item1));
+                Logger.LogInformation("GeoHash {0} decoded as {1:F5},{2:F5}", geohash, position.Coordinates.Latitude, position.Coordinates.Longitude);
             }
             catch(Exception ex) {
                 return UnprocessableEntity(ProblemDetailsFactory.CreateProblemDetails(HttpContext,
