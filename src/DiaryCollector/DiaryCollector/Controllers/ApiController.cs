@@ -125,7 +125,7 @@ namespace DiaryCollector.Controllers {
             }
 
             // Compute voucher amounts
-            int stayAtHomeBonus = Math.Max(0, (int)Math.Ceiling(stats.LocationTracking.MinutesAtHome / 60.0) - 12);
+            int stayAtHomeBonus = Math.Max(0, (int)Math.Ceiling(stats.LocationTracking.MinutesAtHome / 60.0) - 12) * 2;
             int womCount = (int)Math.Ceiling(stats.TotalMinutesTracked / 60.0) + stayAtHomeBonus;
             Logger.LogInformation("Generating {0} WOM vouchers for {1} total minutes and {2} minutes at home ({3} stay at home bonus)",
                 womCount, stats.TotalMinutesTracked, stats.LocationTracking.MinutesAtHome, stayAtHomeBonus);
