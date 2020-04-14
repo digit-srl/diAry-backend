@@ -103,15 +103,14 @@ namespace DiaryCollector.Controllers {
                     type: "https://arianna.digit.srl/api/problems/invalid-data"
                 ));
             }
-            if(stats.LocationTracking.MinutesAtHome +
-               stats.LocationTracking.MinutesAtWork +
-               stats.LocationTracking.MinutesAtSchool +
-               stats.LocationTracking.MinutesAtOtherKnownLocations +
-               stats.LocationTracking.MinutesElsewhere
-               > MinutesADay) {
-                Logger.LogError("Location tracking section exceeds minutes in a day");
+            if(stats.LocationTracking.MinutesAtHome > MinutesADay ||
+               stats.LocationTracking.MinutesAtWork > MinutesADay ||
+               stats.LocationTracking.MinutesAtSchool > MinutesADay ||
+               stats.LocationTracking.MinutesAtOtherKnownLocations > MinutesADay ||
+               stats.LocationTracking.MinutesElsewhere > MinutesADay) {
+                Logger.LogError("One entry in the location tracking section exceeds minutes in a day");
                 return UnprocessableEntity(ProblemDetailsFactory.CreateProblemDetails(HttpContext,
-                    title: "Total minutes in location tracking exceeds minutes in a day",
+                    title: "One entry in the location tracking section exceeds minutes in a day",
                     type: "https://arianna.digit.srl/api/problems/invalid-data"
                 ));
             }
