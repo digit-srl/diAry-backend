@@ -3,9 +3,12 @@ using DiaryCollector.OutputModels;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Routing;
 using Microsoft.Extensions.Logging;
+using MongoDB.Bson;
 using MongoDB.Driver.GeoJsonObjectModel;
 using System;
+using System.Collections.Generic;
 using System.Globalization;
+using System.Linq;
 using System.Threading.Tasks;
 using WomPlatform.Connector.Models;
 
@@ -40,7 +43,7 @@ namespace DiaryCollector.Controllers {
         public async Task<IActionResult> Upload(
             [FromBody] DailyStats stats
         ) {
-            if(!ModelState.IsValid) {
+            if (!ModelState.IsValid) {
                 Logger.LogError("Failed to parse input data: {0}", ModelState);
                 return BadRequest(ModelState);
             }
@@ -48,28 +51,28 @@ namespace DiaryCollector.Controllers {
             Logger.LogInformation("Receiving daily stats from device {0} for {1}", stats.InstallationId, stats.Date.ToString("d", CultureInfo.InvariantCulture));
 
             // Safety checks
-            if(stats.Date < MinDate) {
+            if (stats.Date < MinDate) {
                 Logger.LogError("Daily statistics for unacceptable date {0}", stats.Date);
                 return UnprocessableEntity(ProblemDetailsFactory.CreateProblemDetails(HttpContext,
                     title: "Unacceptable date (out of valid range)",
                     type: "https://arianna.digit.srl/api/problems/invalid-date"
                 ));
             }
-            if(stats.TotalMinutesTracked > MinutesADay) {
+            if (stats.TotalMinutesTracked > MinutesADay) {
                 Logger.LogError("Total minutes tracked ({0}) exceeds minutes in a day", stats.TotalMinutesTracked);
                 return UnprocessableEntity(ProblemDetailsFactory.CreateProblemDetails(HttpContext,
                     title: "Total minutes tracked exceeds minutes in a day",
                     type: "https://arianna.digit.srl/api/problems/invalid-data"
                 ));
             }
-            if(stats.Date >= DateTime.UtcNow.Date) {
+            if (stats.Date >= DateTime.UtcNow.Date) {
                 Logger.LogError("Daily statistics for non-elapsed day {0}", stats.Date.Date);
                 return UnprocessableEntity(ProblemDetailsFactory.CreateProblemDetails(HttpContext,
                     title: "Unacceptable date (future date)",
                     type: "https://arianna.digit.srl/api/problems/invalid-date"
                 ));
             }
-            
+
             GeoJsonPoint<GeoJson2DGeographicCoordinates> position;
             try {
                 var geohash = stats.CentroidHash.Substring(0, 5);
@@ -77,7 +80,7 @@ namespace DiaryCollector.Controllers {
                 position = new GeoJsonPoint<GeoJson2DGeographicCoordinates>(new GeoJson2DGeographicCoordinates(decoded.Item2, decoded.Item1));
                 Logger.LogInformation("GeoHash {0} decoded as {1:F5},{2:F5}", geohash, position.Coordinates.Latitude, position.Coordinates.Longitude);
             }
-            catch(Exception ex) {
+            catch (Exception ex) {
                 return UnprocessableEntity(ProblemDetailsFactory.CreateProblemDetails(HttpContext,
                     title: "Cannot decode geohash",
                     type: "https://arianna.digit.srl/api/problems/invalid-data",
@@ -85,14 +88,14 @@ namespace DiaryCollector.Controllers {
                 ));
             }
 
-            if(stats.LocationTracking == null) {
+            if (stats.LocationTracking == null) {
                 Logger.LogError("Payload does not contain location tracking section");
                 return UnprocessableEntity(ProblemDetailsFactory.CreateProblemDetails(HttpContext,
                     title: "Payload does not contain location tracking section",
                     type: "https://arianna.digit.srl/api/problems/invalid-data"
                 ));
             }
-            if(stats.LocationTracking.MinutesAtHome < 0 ||
+            if (stats.LocationTracking.MinutesAtHome < 0 ||
                stats.LocationTracking.MinutesAtWork < 0 ||
                stats.LocationTracking.MinutesAtSchool < 0 ||
                stats.LocationTracking.MinutesAtOtherKnownLocations < 0 ||
@@ -103,7 +106,7 @@ namespace DiaryCollector.Controllers {
                     type: "https://arianna.digit.srl/api/problems/invalid-data"
                 ));
             }
-            if(stats.LocationTracking.MinutesAtHome > MinutesADay ||
+            if (stats.LocationTracking.MinutesAtHome > MinutesADay ||
                stats.LocationTracking.MinutesAtWork > MinutesADay ||
                stats.LocationTracking.MinutesAtSchool > MinutesADay ||
                stats.LocationTracking.MinutesAtOtherKnownLocations > MinutesADay ||
@@ -117,7 +120,7 @@ namespace DiaryCollector.Controllers {
 
             // Check for duplicates
             var existingStats = await Mongo.GetDailyStats(stats.InstallationId, stats.Date);
-            if(existingStats != null) {
+            if (existingStats != null) {
                 Logger.LogError("Duplicate statistics from device ID {0} for date {1}", stats.InstallationId, stats.Date.ToString("d", CultureInfo.InvariantCulture));
                 return Conflict(ProblemDetailsFactory.CreateProblemDetails(HttpContext,
                     title: "Duplicate statistics for date",
