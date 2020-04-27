@@ -102,7 +102,7 @@ namespace DiaryCollector {
 
         public async Task<List<CallToAction>> MatchFilter(DateTime date, string[] geohashes) {
             var startOfDay = date.Date;
-            var endOfDay = startOfDay.AddDays(0.999);
+            var endOfDay = startOfDay.AddDays(1);
 
             _logger.LogDebug("Querying for filters between {0} and {1} in hashes {2}",
                 startOfDay, endOfDay, string.Join(", ", geohashes));
@@ -114,20 +114,12 @@ namespace DiaryCollector {
                              );
 
             var filter = Builders<CallToActionFilter>.Filter.And(
-                Builders<CallToActionFilter>.Filter.Lt(cta => cta.TimeBegin, startOfDay),
-                Builders<CallToActionFilter>.Filter.Gt(cta => cta.TimeEnd, endOfDay),
+                Builders<CallToActionFilter>.Filter.Lt(cta => cta.TimeBegin, endOfDay),
+                Builders<CallToActionFilter>.Filter.Gt(cta => cta.TimeEnd, startOfDay),
                 Builders<CallToActionFilter>.Filter.Or(geofilters)
             );
 
-            var callIdProjection = Builders<CallToActionFilter>.Projection.Expression(
-                cta => cta.CallToActionId
-            );
-
-            var pipeline = PipelineDefinitionBuilder.For<CallToActionFilter>()
-                .Match(filter)
-                .Group(callIdProjection);
-            
-            var matching = await CallToActionFilters.Aggregate(pipeline).ToListAsync();
+            var matching = await CallToActionFilters.Distinct(cta => cta.CallToActionId, filter).ToListAsync();
             _logger.LogDebug("Executed pipeline, got {0} call to action IDs", matching.Count);
 
             return await GetCallToActions(matching);
