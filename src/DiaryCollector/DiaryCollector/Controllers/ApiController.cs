@@ -169,6 +169,30 @@ namespace DiaryCollector.Controllers {
             });
         }
 
+        [HttpPost("check")]
+        [ServiceFilter(typeof(RequireApiKeyAttribute))]
+        public async Task<IActionResult> Upload(
+            [FromBody] DataCheck data
+        ) {
+            if(data == null || data.Activities == null) {
+                return BadRequest();
+            }
+            Logger.LogDebug("Received query on {0} activity slices", data.Activities.Length);
+
+            var idMap = new HashSet<ObjectId>();
+            foreach(var activity in data.Activities) {
+                var ids = await Mongo.MatchFilter(activity.Date, activity.Hashes);
+                Logger.LogDebug("Found ids: {0}", string.Join(", ", from id in ids select id.Id.ToString()));
+                foreach(var id in ids) {
+                    idMap.Add(id.Id);
+                }
+            }
+
+            Logger.LogInformation("Total: {0} ids", idMap.Count);
+
+            return Content(idMap.Count.ToString());
+        }
+
     }
 
 }
