@@ -10,6 +10,9 @@ namespace DiaryCollector.DataModels {
         [BsonId(IdGenerator = typeof(ObjectIdGenerator))]
         public ObjectId Id { get; set; }
 
+        [BsonElement("description")]
+        public string Description { get; set; }
+
         [BsonElement("url")]
         public string Url { get; set; }
 

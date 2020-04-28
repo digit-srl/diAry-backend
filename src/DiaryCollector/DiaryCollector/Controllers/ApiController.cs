@@ -196,11 +196,14 @@ namespace DiaryCollector.Controllers {
             var filterMap = filters.GroupBy(f => f.CallToActionId)
                 .ToDictionary(g => g.Key, g => g.Select(cta => cta));
 
+            Logger.LogInformation("Found {0} call to actions with {1} filters for query", ctas.Count, filters.Count);
+
             return Ok(new CallToActionMatch {
                 HasMatch = idMap.Count > 0,
                 Calls = (from cta in ctas
                          select new CallToActionMatch.CallToAction {
                              Id = cta.Id.ToString(),
+                             Description = cta.Description,
                              Url = cta.Url,
                              Queries = (from filter in filterMap[cta.Id]
                                         select new CallToActionMatch.CallToActionQuery {

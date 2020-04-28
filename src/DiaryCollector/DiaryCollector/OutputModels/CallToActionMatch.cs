@@ -15,6 +15,8 @@ namespace DiaryCollector.OutputModels {
 
             public string Id { get; set; }
 
+            public string Description { get; set; }
+
             public string Url { get; set; }
 
             public CallToActionQuery[] Queries { get; set; }
