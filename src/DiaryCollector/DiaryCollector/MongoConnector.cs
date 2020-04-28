@@ -130,6 +130,11 @@ namespace DiaryCollector {
             return CallsToAction.Find(filter).ToListAsync();
         }
 
+        public Task<List<CallToActionFilter>> GetCallToActionFilters(IEnumerable<ObjectId> callToActionIds) {
+            var filter = Builders<CallToActionFilter>.Filter.In(cta => cta.CallToActionId, callToActionIds);
+            return CallToActionFilters.Find(filter).ToListAsync();
+        }
+
     }
 
 }

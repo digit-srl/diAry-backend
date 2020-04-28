@@ -183,17 +183,36 @@ namespace DiaryCollector.Controllers {
             Logger.LogDebug("Received query on {0} activity slices", data.Activities.Length);
 
             var idMap = new HashSet<ObjectId>();
+            var ctas = new List<DataModels.CallToAction>();
             foreach(var activity in data.Activities) {
-                var ids = await Mongo.MatchFilter(activity.Date, activity.Hashes);
-                Logger.LogDebug("Found ids: {0}", string.Join(", ", from id in ids select id.Id.ToString()));
-                foreach(var id in ids) {
-                    idMap.Add(id.Id);
-                }
+                var matchCtas = await Mongo.MatchFilter(activity.Date, activity.Hashes);
+                Logger.LogDebug("Found ids: {0}", string.Join(", ", from id in matchCtas select id.Id.ToString()));
+                ctas.AddRange(matchCtas);
+                idMap.AddRange(matchCtas, cta => cta.Id);
             }
 
-            Logger.LogInformation("Total: {0} ids", idMap.Count);
+            Logger.LogTrace("Loading filters for {0} call to actions", idMap.Count);
+            var filters = await Mongo.GetCallToActionFilters(idMap);
+            var filterMap = filters.GroupBy(f => f.CallToActionId)
+                .ToDictionary(g => g.Key, g => g.Select(cta => cta));
 
-            return Content(idMap.Count.ToString());
+            return Ok(new CallToActionMatch {
+                HasMatch = idMap.Count > 0,
+                Calls = (from cta in ctas
+                         select new CallToActionMatch.CallToAction {
+                             Id = cta.Id.ToString(),
+                             Url = cta.Url,
+                             Queries = (from filter in filterMap[cta.Id]
+                                        select new CallToActionMatch.CallToActionQuery {
+                                            From = filter.TimeBegin,
+                                            To = filter.TimeEnd,
+                                            Geometry = new CallToActionMatch.GeoJsonGeometry {
+                                                Type = "Polygon",
+                                                Coordinates = filter.Geometry.ToPolygonArray()
+                                            }
+                                        }).ToArray()
+                         }).ToArray()
+            });
         }
 
     }
