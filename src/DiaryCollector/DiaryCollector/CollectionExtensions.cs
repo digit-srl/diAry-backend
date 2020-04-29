@@ -19,6 +19,12 @@ namespace DiaryCollector {
             }
         }
 
+        public static void AddRange<K, V>(this IDictionary<K, V> dict, IEnumerable<V> input, Func<V, K> mapper) {
+            foreach (var i in input) {
+                dict[mapper(i)] = i;
+            }
+        }
+
     }
 
 }

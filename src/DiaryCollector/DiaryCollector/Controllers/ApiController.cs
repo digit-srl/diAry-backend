@@ -180,27 +180,33 @@ namespace DiaryCollector.Controllers {
             if(data == null || data.Activities == null) {
                 return BadRequest();
             }
-            Logger.LogDebug("Received query on {0} activity slices", data.Activities.Length);
+            Logger.LogInformation("Received query on {0} activity slices, last check {1}",
+                data.Activities.Length, data.LastCheckTimestamp);
 
-            var idMap = new HashSet<ObjectId>();
-            var ctas = new List<DataModels.CallToAction>();
+            var ctas = new Dictionary<ObjectId, DataModels.CallToAction>();
             foreach(var activity in data.Activities) {
                 var matchCtas = await Mongo.MatchFilter(activity.Date, activity.Hashes);
-                Logger.LogDebug("Found ids: {0}", string.Join(", ", from id in matchCtas select id.Id.ToString()));
-                ctas.AddRange(matchCtas);
-                idMap.AddRange(matchCtas, cta => cta.Id);
+                Logger.LogInformation("Geohashes {0} on {1} matches {2} calls ({3})",
+                    string.Join(", ", activity.Hashes),
+                    activity.Date.ToShortDateString(),
+                    matchCtas.Count,
+                    string.Join(", ", from id in matchCtas select id.Id.ToString()));
+                ctas.AddRange(matchCtas, cta => cta.Id);
             }
 
-            Logger.LogTrace("Loading filters for {0} call to actions", idMap.Count);
-            var filters = await Mongo.GetCallToActionFilters(idMap);
+            Logger.LogInformation("Loading filters for {0} unique call to actions", ctas.Count);
+            var filters = await Mongo.GetCallToActionFilters(ctas.Keys);
             var filterMap = filters.GroupBy(f => f.CallToActionId)
                 .ToDictionary(g => g.Key, g => g.Select(cta => cta));
 
-            Logger.LogInformation("Found {0} call to actions with {1} filters for query", ctas.Count, filters.Count);
+            Logger.LogInformation("Found {0} call to actions ({1}) with {2} filters ({3})",
+                ctas.Count, string.Join(", ", from ctaId in ctas.Keys select ctaId.ToString()),
+                filters.Count, string.Join(", ", from filter in filters select filter.Id.ToString())
+            );
 
             return Ok(new CallToActionMatch {
-                HasMatch = idMap.Count > 0,
-                Calls = (from cta in ctas
+                HasMatch = ctas.Count > 0,
+                Calls = (from cta in ctas.Values
                          select new CallToActionMatch.CallToAction {
                              Id = cta.Id.ToString(),
                              Description = cta.Description,
