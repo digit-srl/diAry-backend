@@ -1,0 +1,86 @@
+﻿html b {
+    font-weight: 600;
+}
+
+body {
+    display: flex;
+    flex-direction: column;
+    min-height: 100vh;
+}
+
+body > section {
+    flex-grow: 1;
+}
+
+h2 {
+    margin-top: 2em;
+}
+
+h3 {
+    margin-top: 1em;
+}
+
+.centered {
+    text-align: center;
+}
+
+.language-switcher {
+    background: hsl(224, 25%, 95%);
+    box-shadow: 4px 4px 6px hsla(224, 60%, 20%, 0.4);
+    padding: 0.5em 1em;
+    margin-top: 1em;
+    margin-bottom: 3em;
+    display: inline-block;
+}
+
+.language-switcher a, .language-switcher:visited {
+    text-decoration: underline;
+    color: black;
+}
+
+.language-switcher a:hover {
+    text-decoration: underline;
+    color: black;
+}
+
+.language-switcher a.current {
+    text-decoration: none;
+    font-weight: 600;
+}
+
+p.lead {
+    font-size: 1.2em;
+}
+
+footer {
+    padding-bottom: 2em;
+    padding-top: 2em;
+    margin-top: 1em;
+    background-color: hsla(222, 100%, 97%, 1);
+}
+
+.badge {
+    text-align: center;
+    vertical-align: middle;
+    font-style: italic;
+}
+
+.badge a {
+    border: 0;
+    text-decoration: none;
+}
+
+.badge img {
+    max-width: 50%;
+    height: auto;
+}
+
+.warning-box {
+    border: solid 1px orangered;
+    background-color: #ffeece;
+    padding: 1em;
+}
+
+.warning-box .title {
+    font-weight: bold;
+}

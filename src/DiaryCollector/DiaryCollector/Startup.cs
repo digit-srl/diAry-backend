@@ -17,7 +17,7 @@ namespace DiaryCollector {
 
         public void ConfigureServices(IServiceCollection services) {
             services
-                .AddControllers()
+                .AddControllersWithViews()
                 .AddJsonOptions(opts => {
                     opts.JsonSerializerOptions.AllowTrailingCommas = true;
                     opts.JsonSerializerOptions.DictionaryKeyPolicy = JsonNamingPolicy.CamelCase;

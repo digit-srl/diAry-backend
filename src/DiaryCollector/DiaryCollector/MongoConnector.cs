@@ -82,10 +82,26 @@ namespace DiaryCollector {
             }
         }
 
+        public async Task<CallToAction> GetCallToAction(string id) {
+            if(!ObjectId.TryParse(id, out var objId)) {
+                return null;
+            }
+            var filter = Builders<CallToAction>.Filter.Eq(cta => cta.Id, objId);
+            return await CallsToAction.Find(filter).FirstOrDefaultAsync();
+        }
+
         private IMongoCollection<CallToActionFilter> CallToActionFilters {
             get {
                 return MainDatabase.GetCollection<CallToActionFilter>("CallToActionFilters");
             }
+        }
+
+        public async Task<List<CallToActionFilter>> GetCallToActionFilters(string callId) {
+            if (!ObjectId.TryParse(callId, out var objId)) {
+                return null;
+            }
+            var filter = Builders<CallToActionFilter>.Filter.Eq(cta => cta.CallToActionId, objId);
+            return await CallToActionFilters.Find(filter).ToListAsync();
         }
 
         private string ConvertHashToRegex(string s) {
