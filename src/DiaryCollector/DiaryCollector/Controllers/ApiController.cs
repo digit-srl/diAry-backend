@@ -210,7 +210,7 @@ namespace DiaryCollector.Controllers {
                          select new CallToActionMatch.CallToAction {
                              Id = cta.Id.ToString(),
                              Description = cta.Description,
-                             Url = cta.Url,
+                             Url = "https://arianna.digit.srl" + Link.GetPathByAction(nameof(CallToActionController.Show), "CallToAction", new { id = cta.Id.ToString() }),
                              Queries = (from filter in filterMap[cta.Id]
                                         select new CallToActionMatch.CallToActionQuery {
                                             From = filter.TimeBegin,
