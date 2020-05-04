@@ -15,13 +15,10 @@ using WomPlatform.Connector.Models;
 namespace DiaryCollector.Controllers {
 
     [Route("api")]
-    public class ApiController : ControllerBase {
+    public class ApiController : BaseController {
 
         private readonly MongoConnector Mongo;
         private readonly WomService Wom;
-        private readonly LinkGenerator Link;
-        private readonly ILogger<ApiController> Logger;
-        private readonly Geohash.Geohasher Geohasher = new Geohash.Geohasher();
         private const int MinutesADay = 24 * 60;
 
         private static readonly DateTime MinDate = new DateTime(2020, 4, 2);
@@ -31,11 +28,10 @@ namespace DiaryCollector.Controllers {
             WomService wom,
             LinkGenerator linkGenerator,
             ILogger<ApiController> logger
-        ) {
+        ) : base(linkGenerator, logger)
+        {
             Mongo = mongo;
             Wom = wom;
-            Link = linkGenerator;
-            Logger = logger;
         }
 
         [HttpPost("upload")]
@@ -183,9 +179,14 @@ namespace DiaryCollector.Controllers {
             Logger.LogInformation("Received query on {0} activity slices, last check {1}",
                 data.Activities.Length, data.LastCheckTimestamp);
 
+            if(!data.LastCheckTimestamp.HasValue) {
+                Logger.LogDebug("No last check, checking from min value");
+                data.LastCheckTimestamp = DateTime.MinValue;
+            }
+
             var ctas = new Dictionary<ObjectId, DataModels.CallToAction>();
             foreach(var activity in data.Activities) {
-                var matchCtas = await Mongo.MatchFilter(activity.Date, activity.Hashes);
+                var matchCtas = await Mongo.MatchFilter(activity.Date, activity.Hashes, data.LastCheckTimestamp.Value);
                 Logger.LogInformation("Geohashes {0} on {1} matches {2} calls ({3})",
                     string.Join(", ", activity.Hashes),
                     activity.Date.ToShortDateString(),
@@ -210,7 +211,7 @@ namespace DiaryCollector.Controllers {
                          select new CallToActionMatch.CallToAction {
                              Id = cta.Id.ToString(),
                              Description = cta.Description,
-                             Url = "https://arianna.digit.srl" + Link.GetPathByAction(nameof(CallToActionController.Show), "CallToAction", new { id = cta.Id.ToString() }),
+                             Url = GenerateActionLink(nameof(CallToActionController.Show), "CallToAction", new { id = cta.Id.ToString() }),
                              Queries = (from filter in filterMap[cta.Id]
                                         select new CallToActionMatch.CallToActionQuery {
                                             From = filter.TimeBegin,

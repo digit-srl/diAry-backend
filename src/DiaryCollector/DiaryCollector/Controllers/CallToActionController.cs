@@ -10,24 +10,17 @@ using System.Threading.Tasks;
 namespace DiaryCollector.Controllers {
 
     [Route("calls")]
-    public class CallToActionController : Controller {
+    public class CallToActionController : BaseController {
 
         private readonly MongoConnector Mongo;
-        private readonly WomService Wom;
-        private readonly LinkGenerator Link;
-        private readonly ILogger<CallToActionController> Logger;
-        private readonly Geohash.Geohasher Geohasher = new Geohash.Geohasher();
 
         public CallToActionController(
             MongoConnector mongo,
-            WomService wom,
             LinkGenerator linkGenerator,
             ILogger<CallToActionController> logger
-        ) {
+        ) : base(linkGenerator, logger)
+        {
             Mongo = mongo;
-            Wom = wom;
-            Link = linkGenerator;
-            Logger = logger;
         }
 
         [HttpGet("{id}")]

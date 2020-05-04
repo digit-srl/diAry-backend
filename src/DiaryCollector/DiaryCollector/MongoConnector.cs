@@ -116,7 +116,7 @@ namespace DiaryCollector {
             return sb.ToString();
         }
 
-        public async Task<List<CallToAction>> MatchFilter(DateTime date, string[] geohashes) {
+        public async Task<List<CallToAction>> MatchFilter(DateTime date, string[] geohashes, DateTime lastCheck) {
             var startOfDay = date.Date;
             var endOfDay = startOfDay.AddDays(1);
 
@@ -130,6 +130,7 @@ namespace DiaryCollector {
                              );
 
             var filter = Builders<CallToActionFilter>.Filter.And(
+                Builders<CallToActionFilter>.Filter.Gt(cta => cta.AddedOn, lastCheck),
                 Builders<CallToActionFilter>.Filter.Lt(cta => cta.TimeBegin, endOfDay),
                 Builders<CallToActionFilter>.Filter.Gt(cta => cta.TimeEnd, startOfDay),
                 Builders<CallToActionFilter>.Filter.Or(geofilters)

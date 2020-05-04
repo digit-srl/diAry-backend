@@ -1,8 +1,11 @@
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
+using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
+using Microsoft.Extensions.Logging;
+using System;
 using System.Text.Json;
 
 namespace DiaryCollector {
@@ -30,9 +33,25 @@ namespace DiaryCollector {
             services.AddSingleton<WomService>();
         }
 
-        public void Configure(IApplicationBuilder app, IWebHostEnvironment env) {
+        public void Configure(
+            IApplicationBuilder app,
+            IWebHostEnvironment env,
+            ILogger<Startup> logger
+        ) {
             if (env.IsDevelopment()) {
                 app.UseDeveloperExceptionPage();
+            }
+
+            // Fix incoming base path for hosting behind proxy
+            string basePath = Environment.GetEnvironmentVariable("ASPNETCORE_BASEPATH");
+            if (!string.IsNullOrWhiteSpace(basePath)) {
+                logger.LogInformation("Configuring server to run under base path '{0}'", basePath);
+
+                app.UsePathBase(new PathString(basePath));
+                app.Use(async (context, next) => {
+                    context.Request.PathBase = basePath;
+                    await next.Invoke();
+                });
             }
 
             app.UseDefaultFiles();
@@ -43,6 +62,8 @@ namespace DiaryCollector {
             app.UseEndpoints(endpoints => {
                 endpoints.MapControllers();
             });
+
+            logger.LogInformation("Application startup complete");
         }
     }
 }
