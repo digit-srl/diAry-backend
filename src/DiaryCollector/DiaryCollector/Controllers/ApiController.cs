@@ -216,6 +216,7 @@ namespace DiaryCollector.Controllers {
                                         select new CallToActionMatch.CallToActionQuery {
                                             From = filter.TimeBegin,
                                             To = filter.TimeEnd,
+                                            LastUpdate = filter.AddedOn,
                                             Geometry = new CallToActionMatch.GeoJsonGeometry {
                                                 Type = "Polygon",
                                                 Coordinates = filter.Geometry.ToPolygonArray()

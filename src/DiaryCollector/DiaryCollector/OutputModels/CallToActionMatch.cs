@@ -29,6 +29,8 @@ namespace DiaryCollector.OutputModels {
 
             public DateTime To { get; set; }
 
+            public DateTime LastUpdate { get; set; }
+
             public GeoJsonGeometry Geometry { get; set; }
 
         }
