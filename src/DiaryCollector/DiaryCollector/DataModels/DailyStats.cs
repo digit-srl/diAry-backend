@@ -27,6 +27,10 @@ namespace DiaryCollector.DataModels {
         [BsonElement("centroid")]
         public GeoJsonPoint<GeoJson2DGeographicCoordinates> Centroid { get; set; }
 
+        [BsonElement("centroidHash")]
+        [BsonIgnoreIfNull]
+        public string CentroidHash { get; set; }
+
         [BsonElement("locationCount")]
         public int LocationCount { get; set; }
 

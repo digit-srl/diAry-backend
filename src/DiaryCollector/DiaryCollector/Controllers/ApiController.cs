@@ -74,8 +74,9 @@ namespace DiaryCollector.Controllers {
             }
 
             GeoJsonPoint<GeoJson2DGeographicCoordinates> position;
+            string geohash;
             try {
-                var geohash = stats.CentroidHash.Substring(0, 5);
+                geohash = stats.CentroidHash.Substring(0, 5);
                 var decoded = Geohasher.Decode(geohash);
                 position = new GeoJsonPoint<GeoJson2DGeographicCoordinates>(new GeoJson2DGeographicCoordinates(decoded.Item2, decoded.Item1));
                 Logger.LogInformation("GeoHash {0} decoded as {1:F5},{2:F5}", geohash, position.Coordinates.Latitude, position.Coordinates.Longitude);
@@ -150,6 +151,7 @@ namespace DiaryCollector.Controllers {
                 TotalMinutesTracked = stats.TotalMinutesTracked,
                 TotalWomVouchersEarned = womCount,
                 Centroid = position,
+                CentroidHash = geohash,
                 LocationCount = stats.LocationCount,
                 VehicleCount = stats.VehicleCount,
                 EventCount = stats.EventCount,
