@@ -53,6 +53,11 @@ namespace DiaryCollector {
             }
         }
 
+        public Task<ApiKey> GetApiKeyByKey(string key) {
+            var filter = Builders<ApiKey>.Filter.Eq(ak => ak.Key, key);
+            return ApiKeys.Find(filter).SingleOrDefaultAsync();
+        }
+
         private IMongoCollection<DailyStats> DailyStats {
             get {
                 return MainDatabase.GetCollection<DailyStats>("DailyStats");
@@ -71,9 +76,44 @@ namespace DiaryCollector {
             return DailyStats.Find(filter).SingleOrDefaultAsync();
         }
 
-        public Task<ApiKey> GetApiKeyByKey(string key) {
-            var filter = Builders<ApiKey>.Filter.Eq(ak => ak.Key, key);
-            return ApiKeys.Find(filter).SingleOrDefaultAsync();
+        public Task<DailyStats> GetLastDailyStats() {
+            var order = Builders<DailyStats>.Sort.Descending(ds => ds.Date);
+            return DailyStats.Find(Builders<DailyStats>.Filter.Empty)
+                .Sort(order).Limit(1).SingleOrDefaultAsync();
+        }
+
+        public Task<IAsyncCursor<DailyStats>> FetchAllDailyStats() {
+            var order = Builders<DailyStats>.Sort.Ascending(ds => ds.Date);
+            return DailyStats.Find(Builders<DailyStats>.Filter.Empty)
+                .Sort(order).ToCursorAsync();
+        }
+
+        public Task<IAsyncCursor<DailyStatsAggregation>> GetAggregatedDailyStats() {
+            var pipeFilter = BsonDocument.Parse(@"{
+                ""$project"": {
+                    ""date"": { $dateToString: { ""date"": ""$date"", ""format"": ""%Y-%m-%d"", ""timezone"": ""GMT"" } },
+                    ""totalMinutesTracked"": ""$totalMinutesTracked"",
+                    ""minutesAtHome"": ""$locationTracking.minutesAtHome"",
+                    ""boundingBoxDiagonal"": ""$boundingBoxDiagonal""
+                }
+            }");
+            var pipeGroup = BsonDocument.Parse(@"{
+                ""$group"": {
+                    ""_id"": ""$date"",
+                    ""count"": { ""$sum"": 1 },
+                    ""avgMinutesTracked"": { ""$avg"": ""$totalMinutesTracked"" },
+                    ""totalMinutesTracked"": { ""$sum"": ""$totalMinutesTracked"" },
+                    ""avgMinutesAtHome"": { ""$avg"": ""$minutesAtHome"" },
+                    ""totalMinutesAtHome"": { ""$sum"": ""$minutesAtHome"" },
+                    ""avgBoundingBoxDiagonal"": { ""$avg"": ""$boundingBoxDiagonal"" }
+                }
+            }");
+            var pipeSort = BsonDocument.Parse(@"{
+                ""$sort"": {
+                    ""_id"": 1
+                }
+            }");
+            return DailyStats.AggregateAsync<DailyStatsAggregation>(new[] { pipeFilter, pipeGroup, pipeSort });
         }
 
         private IMongoCollection<CallToAction> CallsToAction {
