@@ -1,8 +1,10 @@
-﻿using Microsoft.AspNetCore.Http;
+﻿using GeoJSON.Net.Geometry;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Routing;
 using Microsoft.Extensions.Logging;
 using Microsoft.Net.Http.Headers;
+using Newtonsoft.Json;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -32,17 +34,29 @@ namespace DiaryCollector.Controllers {
             Response.Headers[HeaderNames.ContentType] = "text/csv";
             Response.StatusCode = (int)HttpStatusCode.OK;
 
-            await Response.WriteAsync("InstallationId,TotalMinutesTracked,CentroidGeohash,CentroidLat,CentroidLong,LocationCount,VehicleCount,EventCount,SampleCount,DiscardedSampleCount,BoundingBoxDiagonal,MinAtHome,MinAtWork,MinAtSchool,MinAtLocations,MinElsewhere" + Environment.NewLine);
+            await Response.WriteAsync("TotalMinutesTracked,CentroidGeohash,CentroidLat,CentroidLong,GeohashBoxJSON,LocationCount,VehicleCount,EventCount,SampleCount,DiscardedSampleCount,BoundingBoxDiagonal,MinAtHome,MinAtWork,MinAtSchool,MinAtLocations,MinElsewhere" + Environment.NewLine);
 
             var cursor = await Mongo.FetchAllDailyStats();
             while(await cursor.MoveNextAsync()) {
                 foreach (var stat in cursor.Current) {
+                    var centroid = stat.CentroidHash ?? Geohasher.Encode(stat.Centroid.Coordinates.Latitude, stat.Centroid.Coordinates.Longitude, 5);
+                    var bbox = Geohasher.GetBoundingBox(centroid);
+                    var polygon = new Polygon(new LineString[] {
+                        new LineString(new IPosition[] {
+                            new Position(bbox[0], bbox[2]),
+                            new Position(bbox[0], bbox[3]),
+                            new Position(bbox[1], bbox[3]),
+                            new Position(bbox[1], bbox[2]),
+                            new Position(bbox[0], bbox[2])
+                        })
+                    });
+
                     await Response.WriteAsync(string.Join(",",
-                        stat.InstallationId.ToString("N"),
                         stat.TotalMinutesTracked,
-                        Geohasher.Encode(stat.Centroid.Coordinates.Latitude, stat.Centroid.Coordinates.Longitude, 5),
+                        centroid,
                         stat.Centroid.Coordinates.Latitude.ToString("F5"),
                         stat.Centroid.Coordinates.Longitude.ToString("F5"),
+                        JsonConvert.SerializeObject(polygon),
                         stat.LocationCount,
                         stat.VehicleCount,
                         stat.EventCount,
