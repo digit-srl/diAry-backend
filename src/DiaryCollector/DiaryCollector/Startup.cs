@@ -28,6 +28,11 @@ namespace DiaryCollector {
                     opts.JsonSerializerOptions.PropertyNamingPolicy = JsonNamingPolicy.CamelCase;
                 });
 
+
+            // Configuration
+            services.Configure<ApiConfiguration>(Configuration.GetSection("Api"));
+
+            // Components
             services.AddSingleton<MongoConnector>();
             services.AddSingleton<RequireApiKeyAttribute>();
             services.AddSingleton<WomService>();

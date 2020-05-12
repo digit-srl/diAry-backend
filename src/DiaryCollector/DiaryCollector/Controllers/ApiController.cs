@@ -2,7 +2,9 @@
 using DiaryCollector.OutputModels;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Routing;
+using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Options;
 using MongoDB.Bson;
 using MongoDB.Driver.GeoJsonObjectModel;
 using System;
@@ -17,6 +19,7 @@ namespace DiaryCollector.Controllers {
     [Route("api")]
     public class ApiController : BaseController {
 
+        private readonly IOptions<ApiConfiguration> ApiConf;
         private readonly MongoConnector Mongo;
         private readonly WomService Wom;
         private const int MinutesADay = 24 * 60;
@@ -24,12 +27,14 @@ namespace DiaryCollector.Controllers {
         private static readonly DateTime MinDate = new DateTime(2020, 4, 2);
 
         public ApiController(
+            IOptions<ApiConfiguration> apiConf,
             MongoConnector mongo,
             WomService wom,
             LinkGenerator linkGenerator,
             ILogger<ApiController> logger
         ) : base(linkGenerator, logger)
         {
+            ApiConf = apiConf;
             Mongo = mongo;
             Wom = wom;
         }
@@ -179,19 +184,22 @@ namespace DiaryCollector.Controllers {
             Logger.LogInformation("Received query on {0} activity slices, last check {1}",
                 data.Activities.Length, data.LastCheckTimestamp);
 
-            if(!data.LastCheckTimestamp.HasValue) {
+            if(ApiConf.Value.PerformTimestampFiltering && !data.LastCheckTimestamp.HasValue) {
                 Logger.LogDebug("No last check, checking from min value");
                 data.LastCheckTimestamp = DateTime.MinValue;
             }
 
             var ctas = new Dictionary<ObjectId, DataModels.CallToAction>();
             foreach(var activity in data.Activities) {
-                var matchCtas = await Mongo.MatchFilter(activity.Date, activity.Hashes, data.LastCheckTimestamp.Value);
+                var matchCtas = await Mongo.MatchFilter(activity.Date, activity.Hashes,
+                    ApiConf.Value.PerformTimestampFiltering ? data.LastCheckTimestamp.Value : DateTime.MinValue);
+                
                 Logger.LogInformation("Geohashes {0} on {1} matches {2} calls ({3})",
                     string.Join(", ", activity.Hashes),
                     activity.Date.ToShortDateString(),
                     matchCtas.Count,
                     string.Join(", ", from id in matchCtas select id.Id.ToString()));
+                
                 ctas.AddRange(matchCtas, cta => cta.Id);
             }
 
