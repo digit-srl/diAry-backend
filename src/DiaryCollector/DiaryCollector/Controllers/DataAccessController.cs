@@ -34,7 +34,7 @@ namespace DiaryCollector.Controllers {
             Response.Headers[HeaderNames.ContentType] = "text/csv";
             Response.StatusCode = (int)HttpStatusCode.OK;
 
-            await Response.WriteAsync("TotalMinutesTracked,CentroidGeohash,CentroidLat,CentroidLong,GeohashBoxJSON,LocationCount,VehicleCount,EventCount,SampleCount,DiscardedSampleCount,BoundingBoxDiagonal,MinAtHome,MinAtWork,MinAtSchool,MinAtLocations,MinElsewhere" + Environment.NewLine);
+            await Response.WriteAsync("Date,TotalMinutesTracked,CentroidGeohash,CentroidLat,CentroidLong,GeohashBoxJSON,LocationCount,VehicleCount,EventCount,SampleCount,DiscardedSampleCount,BoundingBoxDiagonal,MinAtHome,MinAtWork,MinAtSchool,MinAtLocations,MinElsewhere" + Environment.NewLine);
 
             var cursor = await Mongo.FetchAllDailyStats();
             while(await cursor.MoveNextAsync()) {
@@ -52,11 +52,12 @@ namespace DiaryCollector.Controllers {
                     });
 
                     await Response.WriteAsync(string.Join(",",
+                        stat.Date.ToString("yyyy-MM-dd"),
                         stat.TotalMinutesTracked,
                         centroid,
                         stat.Centroid.Coordinates.Latitude.ToString("F5"),
                         stat.Centroid.Coordinates.Longitude.ToString("F5"),
-                        JsonConvert.SerializeObject(polygon),
+                        "\"" + JsonConvert.SerializeObject(polygon).Replace("\"", "\"\"") + "\"",
                         stat.LocationCount,
                         stat.VehicleCount,
                         stat.EventCount,
