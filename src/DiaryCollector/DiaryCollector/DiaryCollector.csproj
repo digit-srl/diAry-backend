@@ -5,6 +5,7 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <PackageReference Include="BCrypt.Net-Core" Version="1.6.0" />
     <PackageReference Include="geohash-dotnet" Version="1.0.4" />
     <PackageReference Include="GeoJSON.Net" Version="1.2.15" />
     <PackageReference Include="MongoDB.Driver" Version="2.10.4" />

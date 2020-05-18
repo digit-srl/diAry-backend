@@ -3,7 +3,7 @@
 <head>
     <meta charset="utf-8">
 
-    <title>@ViewData["Title"] | Digital Arianna</title>
+    <title>@ViewData["Title"] | Digital Arianna Dashboard</title>
 
     <meta name="viewport" content="width=device-width, initial-scale=1">
 
@@ -20,16 +20,8 @@
     <header>
         <div class="container">
             <div class="row">
-                <div class="three columns">&nbsp;</div>
-                <div class="six columns centered">
-                    <img src="~/logo.png" alt="diAry" class="u-full-width" />
-                </div>
-                <div class="three columns">&nbsp;</div>
-            </div>
-
-            <div class="row">
                 <div class="twelve columns">
-                    <h1 class="centered">Call to Action</h1>
+                    <h1 class="centered">Dashboard</h1>
                 </div>
             </div>
         </div>
@@ -37,7 +29,11 @@
 
     <section>
         <div class="container">
-            @RenderBody()
+            <div class="row">
+                <div class="twelve columns">
+                    @RenderBody()
+                </div>
+            </div>
         </div>
     </section>
 

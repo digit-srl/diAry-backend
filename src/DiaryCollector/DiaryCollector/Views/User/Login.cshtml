@@ -1,0 +1,26 @@
+﻿@{
+    Layout = "Dashboard";
+    ViewData["Title"] = "Login";
+}
+
+@section Head {
+
+}
+
+<h2>Login</h2>
+
+<form method="post" action="@Url.Action(nameof(UserController.LoginPerform), "User")">
+    <p>
+        <label for="username">Username:<br />
+            <input type="text" name="username" id="username" />
+        </label>
+    </p>
+
+    <p>
+        <label for="password">Password:<br />
+            <input type="password" name="password" id="password" />
+        </label>
+    </p>
+
+    <p><button type="submit" class="button-primary">Login</button></p>
+</form>

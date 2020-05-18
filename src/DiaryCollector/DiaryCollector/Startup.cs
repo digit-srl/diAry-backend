@@ -1,3 +1,5 @@
+using Microsoft.AspNetCore.Authentication.Cookies;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http;
@@ -18,6 +20,8 @@ namespace DiaryCollector {
 
         public IConfiguration Configuration { get; }
 
+        public const string AdminUserLoginPolicy = "AdminUserLoginPolicy";
+
         public void ConfigureServices(IServiceCollection services) {
             services
                 .AddControllersWithViews()
@@ -28,6 +32,30 @@ namespace DiaryCollector {
                     opts.JsonSerializerOptions.PropertyNamingPolicy = JsonNamingPolicy.CamelCase;
                 });
 
+            services.AddAuthentication(CookieAuthenticationDefaults.AuthenticationScheme)
+                .AddCookie(CookieAuthenticationDefaults.AuthenticationScheme, opts => {
+                    opts.LoginPath = "/user/login";
+                    opts.LogoutPath = "/user/logout";
+                    opts.ReturnUrlParameter = "return";
+                    opts.ExpireTimeSpan = TimeSpan.FromDays(30);
+                    opts.Cookie = new CookieBuilder {
+                        IsEssential = true,
+                        Name = "AuthLogin",
+                        SecurePolicy = CookieSecurePolicy.Always,
+                        SameSite = SameSiteMode.Strict,
+                        HttpOnly = true
+                    };
+                })
+            ;
+            services.AddAuthorization(opts => {
+                opts.AddPolicy(
+                    AdminUserLoginPolicy,
+                    new AuthorizationPolicyBuilder()
+                        .RequireAuthenticatedUser()
+                        .AddAuthenticationSchemes(CookieAuthenticationDefaults.AuthenticationScheme)
+                        .Build()
+                );
+            });
 
             // Configuration
             services.Configure<ApiConfiguration>(Configuration.GetSection("Api"));
@@ -63,6 +91,9 @@ namespace DiaryCollector {
             app.UseStaticFiles();
 
             app.UseRouting();
+
+            app.UseAuthentication();
+            app.UseAuthorization();
 
             app.UseEndpoints(endpoints => {
                 endpoints.MapControllers();

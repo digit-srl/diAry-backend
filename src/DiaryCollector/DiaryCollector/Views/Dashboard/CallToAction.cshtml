@@ -1,0 +1,91 @@
+﻿@model DashboardCallToActionViewModel
+@{
+    Layout = "Dashboard";
+    ViewData["Title"] = "Call to Action";
+}
+
+@section Head {
+
+}
+
+<p>
+    @Html.ActionLink("◀ Back to calls", nameof(DashboardController.Index), "Dashboard")
+</p>
+
+<h2>Call @Model.Call.Id.ToString()</h2>
+
+<form method="post" action="@Url.Action(nameof(DashboardController.UpdateCall), "Dashboard", new { id = Model.Call.Id.ToString() })">
+    <p>
+        <label for="description">Description:<br />
+            <input type="text" name="description" id="description" value="@Model.Call.Description" />
+        </label>
+    </p>
+
+    <p>
+        <label for="url">Call to action URL:<br />
+            <input type="text" name="url" id="url" value="@Model.Call.Url" />
+        </label>
+    </p>
+
+    <p>
+        <button type="submit" class="button-primary">Update data</button>
+    </p>
+</form>
+
+<h3>Filters</h3>
+
+@foreach(var filter in Model.Filters) {
+
+<div class="filter">
+    <h4>Filter @filter.Id.ToString()</h4>
+
+    <form method="post" action="@Url.Action(nameof(DashboardController.UpdateFilter), "Dashboard", new { id = Model.Call.Id.ToString(), filterId = filter.Id.ToString() })">
+        <p>
+            <label for="addedOn">Added on:<br />
+                <input type="text" name="addedOn" id="addedOn" value="@filter.AddedOn.ToString("O")" />
+            </label>
+        </p>
+
+        <p>
+            <label for="from">From:<br />
+                <input type="text" name="from" id="from" value="@filter.TimeBegin.ToString("O")" />
+            </label>
+        </p>
+
+        <p>
+            <label for="to">To:<br />
+                <input type="text" name="to" id="to" value="@filter.TimeEnd.ToString("O")" />
+            </label>
+        </p>
+
+        <p>
+            <textarea cols="120" rows="16" name="geojson" id="geojson">
+@filter.Geometry.ToGeoJson()
+            </textarea>
+        </p>
+
+        <button type="submit" class="button-primary">Update</button>
+    </form>
+
+    <form method="post" action="@Url.Action(nameof(DashboardController.DeleteFilter), "Dashboard", new { id = Model.Call.Id.ToString(), filterId = filter.Id.ToString() })">
+        <button type="submit" class="button">Delete Call to Action</button>
+    </form>
+</div>
+
+}
+
+<h3>Add new filter</h3>
+
+<div class="filter add">
+    <form method="post" action="@Url.Action(nameof(DashboardController.DeleteCall), "Dashboard", new { id = Model.Call.Id.ToString() })">
+        <button type="submit" class="button-primary">Add filter</button>
+    </form>
+</div>
+
+<h3>Operations on Call to Action</h3>
+
+<div class="buttons">
+    <form method="post" action="@Url.Action(nameof(DashboardController.DeleteCall), "Dashboard", new { id = Model.Call.Id.ToString() })">
+        <button type="submit" class="button-primary">Delete Call to Action ⚠</button>
+    </form>
+</div>

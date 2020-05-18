@@ -1,9 +1,7 @@
 ﻿using DiaryCollector.DataModels;
-using Geohash;
 using Microsoft.Extensions.Logging;
 using MongoDB.Bson;
 using MongoDB.Driver;
-using MongoDB.Driver.GeoJsonObjectModel;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -116,6 +114,8 @@ namespace DiaryCollector {
             return DailyStats.AggregateAsync<DailyStatsAggregation>(new[] { pipeFilter, pipeGroup, pipeSort });
         }
 
+        #region Call to action
+
         private IMongoCollection<CallToAction> CallsToAction {
             get {
                 return MainDatabase.GetCollection<CallToAction>("CallsToAction");
@@ -130,12 +130,52 @@ namespace DiaryCollector {
             return await CallsToAction.Find(filter).FirstOrDefaultAsync();
         }
 
+        public Task UpdateCallToAction(string id, string description, string url) {
+            if (!ObjectId.TryParse(id, out var objId)) {
+                return Task.CompletedTask;
+            }
+            
+            var filter = Builders<CallToAction>.Filter.Eq(cta => cta.Id, objId);
+            var update = Builders<CallToAction>.Update.Combine(
+                Builders<CallToAction>.Update.Set(c => c.Description, description),
+                Builders<CallToAction>.Update.Set(c => c.Url, url)
+            );
+            return CallsToAction.UpdateOneAsync(filter, update);
+        }
+
+        #endregion
+
+        #region Call to action filters
+
         private IMongoCollection<CallToActionFilter> CallToActionFilters {
             get {
                 return MainDatabase.GetCollection<CallToActionFilter>("CallToActionFilters");
             }
         }
 
+        public Task<CallToActionFilter> GetCallToActionFilter(string filterId) {
+            if (!ObjectId.TryParse(filterId, out var objId)) {
+                return Task.FromResult<CallToActionFilter>(null);
+            }
+            var filter = Builders<CallToActionFilter>.Filter.Eq(cta => cta.Id, objId);
+            return CallToActionFilters.Find(filter).SingleOrDefaultAsync();
+        }
+
+        public async Task<bool> DeleteCallToActionFilter(string filterId) {
+            if (!ObjectId.TryParse(filterId, out var objId)) {
+                throw new ArgumentException();
+            }
+            var filter = Builders<CallToActionFilter>.Filter.Eq(cta => cta.Id, objId);
+            var result = await CallToActionFilters.DeleteOneAsync(filter);
+            if(!result.IsAcknowledged) {
+                throw new InvalidOperationException("Delete not acknowledged");
+            }
+            return result.DeletedCount == 1;
+        }
+
+        /// <summary>
+        /// Get list of action filters associated to a given call to action (by ID).
+        /// </summary>
         public async Task<List<CallToActionFilter>> GetCallToActionFilters(string callId) {
             if (!ObjectId.TryParse(callId, out var objId)) {
                 return null;
@@ -143,6 +183,16 @@ namespace DiaryCollector {
             var filter = Builders<CallToActionFilter>.Filter.Eq(cta => cta.CallToActionId, objId);
             return await CallToActionFilters.Find(filter).ToListAsync();
         }
+
+        /// <summary>
+        /// Replaces one existing filter.
+        /// </summary>
+        public Task ReplaceCallToActionFilter(CallToActionFilter f) {
+            var filter = Builders<CallToActionFilter>.Filter.Eq(cta => cta.Id, f.Id);
+            return CallToActionFilters.ReplaceOneAsync(filter, f);
+        }
+
+        #endregion
 
         private string ConvertHashToRegex(string s) {
             var sb = new StringBuilder(s.Length * 5 - 1);
@@ -187,9 +237,25 @@ namespace DiaryCollector {
             return CallsToAction.Find(filter).ToListAsync();
         }
 
+        public Task<List<CallToAction>> GetAllCallToActions() {
+            var filter = Builders<CallToAction>.Filter.Empty;
+            return CallsToAction.Find(filter).ToListAsync();
+        }
+
         public Task<List<CallToActionFilter>> GetCallToActionFilters(IEnumerable<ObjectId> callToActionIds) {
             var filter = Builders<CallToActionFilter>.Filter.In(cta => cta.CallToActionId, callToActionIds);
             return CallToActionFilters.Find(filter).ToListAsync();
+        }
+
+        private IMongoCollection<User> Users {
+            get {
+                return MainDatabase.GetCollection<User>("Users");
+            }
+        }
+
+        public Task<User> GetUserByUsername(string username) {
+            var filter = Builders<User>.Filter.Eq(u => u.Username, username);
+            return Users.Find(filter).SingleOrDefaultAsync();
         }
 
     }

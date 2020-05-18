@@ -1,4 +1,5 @@
 ﻿using MongoDB.Driver.GeoJsonObjectModel;
+using Newtonsoft.Json;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -38,6 +39,26 @@ namespace DiaryCollector {
                             };
 
             return positions.ToArray();
+        }
+
+        public static string ToGeoJson(this GeoJsonGeometry<GeoJson2DGeographicCoordinates> geometry) {
+            var geoJson = new OutputModels.CallToActionMatch.GeoJsonGeometry {
+                Type = "Polygon",
+                Coordinates = geometry.ToPolygonArray()
+            };
+            return JsonConvert.SerializeObject(geoJson);
+        }
+
+        public static GeoJsonGeometry<GeoJson2DGeographicCoordinates> PolygonFromGeoJson(this string geojson) {
+            var obj = JsonConvert.DeserializeObject<OutputModels.CallToActionMatch.GeoJsonGeometry>(geojson);
+            if(!obj.Type.Equals("Polygon")) {
+                return null;
+            }
+
+            return GeoJson.Polygon(
+                (from p in obj.Coordinates[0]
+                 select new GeoJson2DGeographicCoordinates(p[0], p[1])).ToArray()
+            );
         }
 
     }

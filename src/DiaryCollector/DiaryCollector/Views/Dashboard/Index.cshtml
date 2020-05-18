@@ -1,0 +1,20 @@
+﻿@model DashboardMainViewModel
+@{
+    Layout = "Dashboard";
+    ViewData["Title"] = "Index";
+}
+
+@section Head {
+
+}
+
+<h2>Call to actions</h2>
+
+<ul>
+    @foreach(var call in Model.Calls) {
+        <li>
+            Call&nbsp;@Html.ActionLink(call.Id.ToString(), nameof(DashboardController.ShowCall), "Dashboard", new { id = call.Id.ToString() })<br />
+            “@call.Description”
+        </li>
+    }
+</ul>
