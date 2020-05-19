@@ -77,7 +77,7 @@ namespace DiaryCollector.Controllers {
         public async Task<IActionResult> UpdateFilter(
             [FromRoute] string id,
             [FromRoute] string filterId,
-            [FromForm] DateTime addedOn,
+            [FromForm] DateTime? addedOn,
             [FromForm] DateTime from,
             [FromForm] DateTime to,
             [FromForm] string geojson
@@ -88,6 +88,7 @@ namespace DiaryCollector.Controllers {
             }
 
             filter.AddedOn = addedOn;
+            filter.AddedOn = addedOn ?? DateTime.UtcNow;
             filter.TimeBegin = from;
             filter.TimeEnd = to;
             filter.Geometry = geojson.PolygonFromGeoJson();
