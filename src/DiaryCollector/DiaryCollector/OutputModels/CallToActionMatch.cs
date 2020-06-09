@@ -19,6 +19,14 @@ namespace DiaryCollector.OutputModels {
 
             public string Url { get; set; }
 
+            public string Source { get; set; }
+
+            public string SourceName { get; set; }
+
+            public string SourceDescription { get; set; }
+
+            public int ExposureSeconds { get; set; }
+
             public CallToActionQuery[] Queries { get; set; }
 
         }

@@ -1,4 +1,5 @@
-﻿using DiaryCollector.ViewModels;
+﻿using DiaryCollector.DataModels;
+using DiaryCollector.ViewModels;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Routing;
@@ -31,6 +32,13 @@ namespace DiaryCollector.Controllers {
             return View("Index", new DashboardMainViewModel {
                 Calls = calls
             });
+        }
+
+        [HttpPost("create")]
+        public async Task<IActionResult> Create() {
+            var call = await Mongo.CreateCallToAction();
+
+            return RedirectToAction(nameof(ShowCall), new { id = call.Id.ToString() });
         }
 
         [HttpGet("{id}")]
@@ -66,9 +74,38 @@ namespace DiaryCollector.Controllers {
         public async Task<IActionResult> UpdateCall(
             [FromRoute] string id,
             [FromForm] string description,
-            [FromForm] string url
+            [FromForm] string url,
+            [FromForm] int exposureLength
         ) {
-            await Mongo.UpdateCallToAction(id, description, url);
+            if(exposureLength < 0) {
+                throw new ArgumentOutOfRangeException();
+            }
+
+            await Mongo.UpdateCallToAction(id, description, url, exposureLength);
+
+            return RedirectToAction(nameof(ShowCall), "Dashboard", new { id = id });
+        }
+
+        [HttpPost("{id}/add")]
+        public async Task<IActionResult> AddFilter(
+            [FromRoute] string id,
+            [FromForm] DateTime? addedOn,
+            [FromForm] DateTime from,
+            [FromForm] DateTime to,
+            [FromForm] string geojson
+        ) {
+            var geometry = geojson.PolygonFromGeoJson();
+            var geohashes = await Geohasher.GenerateCoveringGeohashes(geometry);
+            Logger.LogInformation("Geometry converted to {HashCount} geohashes {Hashes}", geohashes.Count, string.Join(",", geohashes));
+
+            var filter = new CallToActionFilter {
+                AddedOn = addedOn ?? DateTime.UtcNow,
+                TimeBegin = from,
+                TimeEnd = to,
+                Geometry = geometry,
+                CoveringGeohash = geohashes.ToArray()
+            };
+            await Mongo.AddCallToActionFilter(id, filter);
 
             return RedirectToAction(nameof(ShowCall), "Dashboard", new { id = id });
         }
@@ -87,11 +124,15 @@ namespace DiaryCollector.Controllers {
                 return NotFound();
             }
 
-            filter.AddedOn = addedOn;
+            var geometry = geojson.PolygonFromGeoJson();
+            var geohashes = await Geohasher.GenerateCoveringGeohashes(geometry);
+            Logger.LogInformation("Geometry converted to {HashCount} geohashes {Hashes}", geohashes.Count, string.Join(",", geohashes));
+
             filter.AddedOn = addedOn ?? DateTime.UtcNow;
             filter.TimeBegin = from;
             filter.TimeEnd = to;
-            filter.Geometry = geojson.PolygonFromGeoJson();
+            filter.Geometry = geometry;
+            filter.CoveringGeohash = geohashes.ToArray();
 
             await Mongo.ReplaceCallToActionFilter(filter);
 

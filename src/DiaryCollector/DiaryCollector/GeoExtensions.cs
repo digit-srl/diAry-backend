@@ -1,4 +1,5 @@
-﻿using MongoDB.Driver.GeoJsonObjectModel;
+﻿using Geohash;
+using MongoDB.Driver.GeoJsonObjectModel;
 using Newtonsoft.Json;
 using System;
 using System.Collections.Generic;
@@ -49,7 +50,7 @@ namespace DiaryCollector {
             return JsonConvert.SerializeObject(geoJson);
         }
 
-        public static GeoJsonGeometry<GeoJson2DGeographicCoordinates> PolygonFromGeoJson(this string geojson) {
+        public static GeoJsonPolygon<GeoJson2DGeographicCoordinates> PolygonFromGeoJson(this string geojson) {
             var obj = JsonConvert.DeserializeObject<OutputModels.CallToActionMatch.GeoJsonGeometry>(geojson);
             if(!obj.Type.Equals("Polygon")) {
                 return null;
@@ -59,6 +60,15 @@ namespace DiaryCollector {
                 (from p in obj.Coordinates[0]
                  select new GeoJson2DGeographicCoordinates(p[0], p[1])).ToArray()
             );
+        }
+
+        public static Task<List<string>> GenerateCoveringGeohashes(this Geohasher hasher, GeoJsonPolygon<GeoJson2DGeographicCoordinates> polygon, int precision = 4) {
+            var outerRing = new NetTopologySuite.Geometries.LinearRing(
+                (from coord in polygon.Coordinates.Exterior.Positions
+                 select new NetTopologySuite.Geometries.Coordinate(coord.Latitude, coord.Longitude)).ToArray()
+            );
+            var p = new NetTopologySuite.Geometries.Polygon(outerRing);
+            return hasher.GetHashesAsync(p, precision, Mode.Intersect);
         }
 
     }

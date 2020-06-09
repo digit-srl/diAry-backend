@@ -28,6 +28,12 @@
     </p>
 
     <p>
+        <label for="exposureLength">Exposure length (in seconds):<br />
+            <input type="text" name="exposureLength" id="exposureLength" value="@Model.Call.ExposureSeconds" />
+        </label>
+    </p>
+
+    <p>
         <button type="submit" class="button-primary">Update data</button>
     </p>
 </form>
@@ -42,19 +48,19 @@
     <form method="post" action="@Url.Action(nameof(DashboardController.UpdateFilter), "Dashboard", new { id = Model.Call.Id.ToString(), filterId = filter.Id.ToString() })">
         <p>
             <label for="addedOn">Added on:<br />
-                <input type="text" name="addedOn" id="addedOn" value="@filter.AddedOn.ToString("O")" />
+                <input type="text" size="40" name="addedOn" id="addedOn" value="@filter.AddedOn.ToString("O")" />
             </label>
         </p>
 
         <p>
             <label for="from">From:<br />
-                <input type="text" name="from" id="from" value="@filter.TimeBegin.ToString("O")" />
+                <input type="text" size="40" name="from" id="from" value="@filter.TimeBegin.ToString("O")" />
             </label>
         </p>
 
         <p>
             <label for="to">To:<br />
-                <input type="text" name="to" id="to" value="@filter.TimeEnd.ToString("O")" />
+                <input type="text" size="40" name="to" id="to" value="@filter.TimeEnd.ToString("O")" />
             </label>
         </p>
 
@@ -68,7 +74,7 @@
     </form>
 
     <form method="post" action="@Url.Action(nameof(DashboardController.DeleteFilter), "Dashboard", new { id = Model.Call.Id.ToString(), filterId = filter.Id.ToString() })">
-        <button type="submit" class="button">Delete Call to Action</button>
+        <button type="submit" class="button">Delete Filter ⚠</button>
     </form>
 </div>
 
@@ -77,8 +83,31 @@
 <h3>Add new filter</h3>
 
 <div class="filter add">
-    <form method="post" action="@Url.Action(nameof(DashboardController.DeleteCall), "Dashboard", new { id = Model.Call.Id.ToString() })">
-        <button type="submit" class="button-primary">Add filter</button>
+    <form method="post" action="@Url.Action(nameof(DashboardController.AddFilter), "Dashboard", new { id = Model.Call.Id.ToString() })">
+        <p>
+            <label for="addedOn">Added on:<br />
+                <input type="text" size="40" name="addedOn" id="addedOn" />
+            </label>
+        </p>
+
+        <p>
+            <label for="from">From:<br />
+                <input type="text" size="40" name="from" id="from" />
+            </label>
+        </p>
+
+        <p>
+            <label for="to">To:<br />
+                <input type="text" size="40" name="to" id="to" />
+            </label>
+        </p>
+
+        <p>
+            <textarea cols="120" rows="16" name="geojson" id="geojson">
+            </textarea>
+        </p>
+
+        <button type="submit" class="button-primary">Add</button>
     </form>
 </div>
 

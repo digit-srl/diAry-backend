@@ -16,6 +16,23 @@ namespace DiaryCollector.DataModels {
         [BsonElement("url")]
         public string Url { get; set; }
 
+        [BsonElement("source")]
+        [BsonIgnoreIfNull]
+        public string SourceKey { get; set; }
+
+        [BsonElement("sourceName")]
+        [BsonIgnoreIfNull]
+        public string SourceName { get; set; }
+
+        [BsonElement("sourceDescription")]
+        [BsonIgnoreIfNull]
+        public string SourceDescription { get; set; }
+
+        [BsonElement("exposureSeconds")]
+        [BsonDefaultValue(0)]
+        [BsonIgnoreIfDefault]
+        public int ExposureSeconds { get; set; } = 0;
+
         [BsonExtraElements]
         public BsonDocument CatchAll { get; set; }
 

@@ -26,6 +26,7 @@ namespace DiaryCollector {
             services
                 .AddControllersWithViews()
                 .AddJsonOptions(opts => {
+                    opts.JsonSerializerOptions.IgnoreNullValues = true;
                     opts.JsonSerializerOptions.AllowTrailingCommas = true;
                     opts.JsonSerializerOptions.DictionaryKeyPolicy = JsonNamingPolicy.CamelCase;
                     opts.JsonSerializerOptions.PropertyNameCaseInsensitive = true;

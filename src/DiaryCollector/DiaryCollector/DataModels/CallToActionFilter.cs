@@ -32,7 +32,7 @@ namespace DiaryCollector.DataModels {
         public GeoJsonGeometry<GeoJson2DGeographicCoordinates> Geometry { get; set; }
 
         [BsonElement("coveringGeohash")]
-        public string CoveringGeohash { get; set; }
+        public string[] CoveringGeohash { get; set; }
 
         [BsonExtraElements]
         public BsonDocument CatchAll { get; set; }

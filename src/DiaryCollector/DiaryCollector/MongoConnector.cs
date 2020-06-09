@@ -122,6 +122,12 @@ namespace DiaryCollector {
             }
         }
 
+        public async Task<CallToAction> CreateCallToAction() {
+            var call = new CallToAction();
+            await CallsToAction.InsertOneAsync(call);
+            return call;
+        }
+
         public async Task<CallToAction> GetCallToAction(string id) {
             if(!ObjectId.TryParse(id, out var objId)) {
                 return null;
@@ -130,7 +136,7 @@ namespace DiaryCollector {
             return await CallsToAction.Find(filter).FirstOrDefaultAsync();
         }
 
-        public Task UpdateCallToAction(string id, string description, string url) {
+        public Task UpdateCallToAction(string id, string description, string url, int exposureSeconds) {
             if (!ObjectId.TryParse(id, out var objId)) {
                 return Task.CompletedTask;
             }
@@ -138,7 +144,8 @@ namespace DiaryCollector {
             var filter = Builders<CallToAction>.Filter.Eq(cta => cta.Id, objId);
             var update = Builders<CallToAction>.Update.Combine(
                 Builders<CallToAction>.Update.Set(c => c.Description, description),
-                Builders<CallToAction>.Update.Set(c => c.Url, url)
+                Builders<CallToAction>.Update.Set(c => c.Url, url),
+                Builders<CallToAction>.Update.Set(c => c.ExposureSeconds, exposureSeconds)
             );
             return CallsToAction.UpdateOneAsync(filter, update);
         }
@@ -159,6 +166,11 @@ namespace DiaryCollector {
             }
             var filter = Builders<CallToActionFilter>.Filter.Eq(cta => cta.Id, objId);
             return CallToActionFilters.Find(filter).SingleOrDefaultAsync();
+        }
+
+        public Task AddCallToActionFilter(string callId, CallToActionFilter filter) {
+            filter.CallToActionId = new ObjectId(callId);
+            return CallToActionFilters.InsertOneAsync(filter);
         }
 
         public async Task<bool> DeleteCallToActionFilter(string filterId) {
@@ -213,17 +225,13 @@ namespace DiaryCollector {
             _logger.LogDebug("Querying for filters between {0} and {1} in hashes {2}",
                 startOfDay, endOfDay, string.Join(", ", geohashes));
 
-            var geofilters = from hash in geohashes
-                             let regex = ConvertHashToRegex(hash)
-                             select Builders<CallToActionFilter>.Filter.Regex(cta => cta.CoveringGeohash,
-                                 new BsonRegularExpression(regex)
-                             );
+            var geofilter = Builders<CallToActionFilter>.Filter.AnyIn(cta => cta.CoveringGeohash, geohashes);
 
             var filter = Builders<CallToActionFilter>.Filter.And(
                 Builders<CallToActionFilter>.Filter.Gt(cta => cta.AddedOn, lastCheck),
                 Builders<CallToActionFilter>.Filter.Lt(cta => cta.TimeBegin, endOfDay),
                 Builders<CallToActionFilter>.Filter.Gt(cta => cta.TimeEnd, startOfDay),
-                Builders<CallToActionFilter>.Filter.Or(geofilters)
+                Builders<CallToActionFilter>.Filter.Or(geofilter)
             );
 
             var matching = await CallToActionFilters.Distinct(cta => cta.CallToActionId, filter).ToListAsync();

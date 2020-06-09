@@ -221,6 +221,10 @@ namespace DiaryCollector.Controllers {
                              Id = cta.Id.ToString(),
                              Description = cta.Description,
                              Url = GenerateActionLink(nameof(CallToActionController.Show), "CallToAction", new { id = cta.Id.ToString() }),
+                             Source = cta.SourceKey,
+                             SourceName = cta.SourceName,
+                             SourceDescription = cta.SourceDescription,
+                             ExposureSeconds = cta.ExposureSeconds,
                              Queries = (from filter in filterMap[cta.Id]
                                         select new CallToActionMatch.CallToActionQuery {
                                             From = filter.TimeBegin,

@@ -39,7 +39,8 @@ namespace DiaryCollector.Controllers {
                 return NotFound();
             }
 
-            var geohashBounds = Geohasher.GetBoundingBox(filter.CoveringGeohash);
+            // HACK: shows huge Geohash
+            var geohashBounds = Geohasher.GetBoundingBox(filter.CoveringGeohash[0].Substring(0, 1));
 
             return View("Show", new CallToActionViewModel {
                 Id = cta.Id.ToString(),
