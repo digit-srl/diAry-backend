@@ -31,7 +31,9 @@ namespace DiaryCollector {
                             var password = Environment.GetEnvironmentVariable("MONGO_INITDB_ROOT_PASSWORD");
 
                             _logger.LogInformation("Creating new Mongo client");
-                            _client = new MongoClient(string.Format("mongodb://{0}:{1}@mongo", username, password));
+                            var settings = MongoClientSettings.FromConnectionString(string.Format("mongodb://{0}:{1}@mongo", username, password));
+                            settings.WriteConcern = WriteConcern.WMajority;
+                            _client = new MongoClient(settings);
                         }
                     }
                 }
