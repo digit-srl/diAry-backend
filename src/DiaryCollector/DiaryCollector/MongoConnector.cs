@@ -230,9 +230,15 @@ namespace DiaryCollector {
             var geofilter = Builders<CallToActionFilter>.Filter.AnyIn(cta => cta.CoveringGeohash, geohashes);
 
             var filter = Builders<CallToActionFilter>.Filter.And(
-                Builders<CallToActionFilter>.Filter.Gt(cta => cta.AddedOn, lastCheck),
+                // Check whether filter is newer than last check or ends in the future (i.e., must always be checked)
+                Builders<CallToActionFilter>.Filter.Or(
+                    Builders<CallToActionFilter>.Filter.Gt(cta => cta.AddedOn, lastCheck),
+                    Builders<CallToActionFilter>.Filter.Gt(cta => cta.TimeEnd, lastCheck)
+                ),
+                // Time constraints
                 Builders<CallToActionFilter>.Filter.Lt(cta => cta.TimeBegin, endOfDay),
                 Builders<CallToActionFilter>.Filter.Gt(cta => cta.TimeEnd, startOfDay),
+                // Geo constraints
                 Builders<CallToActionFilter>.Filter.Or(geofilter)
             );
 
