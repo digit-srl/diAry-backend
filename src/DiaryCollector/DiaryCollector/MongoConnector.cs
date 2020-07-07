@@ -224,8 +224,8 @@ namespace DiaryCollector {
             var startOfDay = date.Date;
             var endOfDay = startOfDay.AddDays(1);
 
-            _logger.LogDebug("Querying for filters between {0} and {1} in hashes {2}",
-                startOfDay, endOfDay, string.Join(", ", geohashes));
+            _logger.LogDebug("Querying for filters between {0} and {1} in hashes {2}, last check {3}",
+                startOfDay, endOfDay, string.Join(", ", geohashes), lastCheck);
 
             var geofilter = Builders<CallToActionFilter>.Filter.AnyIn(cta => cta.CoveringGeohash, geohashes);
 

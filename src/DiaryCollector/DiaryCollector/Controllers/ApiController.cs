@@ -185,6 +185,9 @@ namespace DiaryCollector.Controllers {
             Logger.LogInformation("Received query on {0} activity slices, last check {1}",
                 data.Activities.Length, data.LastCheckTimestamp);
 
+            if(!ApiConf.Value.PerformTimestampFiltering) {
+                Logger.LogDebug("Timestamp filtering disabled");
+            }
             if(ApiConf.Value.PerformTimestampFiltering && !data.LastCheckTimestamp.HasValue) {
                 Logger.LogDebug("No last check, checking from min value");
                 data.LastCheckTimestamp = DateTime.MinValue;
