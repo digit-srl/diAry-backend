@@ -235,6 +235,8 @@ namespace DiaryCollector {
                     Builders<CallToActionFilter>.Filter.Gt(cta => cta.AddedOn, lastCheck),
                     Builders<CallToActionFilter>.Filter.Gt(cta => cta.TimeEnd, lastCheck)
                 ),
+                // Basic time constraint (filter must have started)
+                Builders<CallToActionFilter>.Filter.Gt(cta => cta.TimeBegin, DateTime.UtcNow),
                 // Time constraints
                 Builders<CallToActionFilter>.Filter.Lt(cta => cta.TimeBegin, endOfDay),
                 Builders<CallToActionFilter>.Filter.Gt(cta => cta.TimeEnd, startOfDay),
