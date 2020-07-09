@@ -223,7 +223,9 @@ namespace DiaryCollector.Controllers {
                          select new CallToActionMatch.CallToAction {
                              Id = cta.Id.ToString(),
                              Description = cta.Description,
-                             Url = GenerateActionLink(nameof(CallToActionController.Show), "CallToAction", new { id = cta.Id.ToString() }),
+                             Url = string.IsNullOrEmpty(cta.Url)
+                                 ? GenerateActionLink(nameof(CallToActionController.Show), "CallToAction", new { id = cta.Id.ToString() })
+                                 : cta.Url,
                              Source = cta.SourceKey,
                              SourceName = cta.SourceName,
                              SourceDescription = cta.SourceDescription,
